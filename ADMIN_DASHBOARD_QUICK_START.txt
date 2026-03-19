@@ -1,0 +1,135 @@
+═══════════════════════════════════════════════════════════════════════════════
+                  MODERN ADMIN DASHBOARD - QUICK START
+═══════════════════════════════════════════════════════════════════════════════
+
+WHAT'S NEW ✨
+─────────────────────────────────────────────────────────────────────────────
+✅ Modern admin dashboard with advanced analytics
+✅ Charts for post engagement, user trends, post rate
+✅ Admin profile management (name, bio, avatar, password)
+✅ Responsive design with dark theme
+✅ User-friendly interface
+
+═══════════════════════════════════════════════════════════════════════════════
+                              SETUP (3 STEPS)
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 1: Install Recharts (Charts Library)
+─────────────────────────────────────────────────────────────────────────────
+cd frontend
+npm install recharts
+
+STEP 2: Set Admin User
+─────────────────────────────────────────────────────────────────────────────
+python backend/set_admin.py bryantech.dev@gmail.com
+
+Note: User must exist first. If not, sign up with that email first.
+
+STEP 3: Restart Backend
+─────────────────────────────────────────────────────────────────────────────
+Stop current backend (Ctrl+C)
+Run: python -m uvicorn app.main:app --reload
+
+═══════════════════════════════════════════════════════════════════════════════
+                            ACCESSING DASHBOARD
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Login with admin account
+   Email: bryantech.dev@gmail.com
+   Password: (your password)
+
+2. Click "Admin" in navbar
+
+3. You'll see the modern dashboard with:
+   ✅ Key metrics (users, posts, comments, engagement)
+   ✅ Post engagement chart (bar chart)
+   ✅ Active users trend (line chart)
+   ✅ Post rate trend (line chart)
+   ✅ Quick links to manage content
+
+═══════════════════════════════════════════════════════════════════════════════
+                          DASHBOARD FEATURES
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 ANALYTICS DASHBOARD (/admin/dashboard)
+  • Key Metrics: Users, Posts, Comments, Engagement
+  • Post Engagement Chart: Likes, Comments, Bookmarks per post
+  • Active Users Trend: User activity over 30 days
+  • Post Rate Trend: Posting activity over 30 days
+  • Quick Links: Manage Users, Posts, Comments
+
+⚙️ ADMIN SETTINGS (/admin/settings)
+  • Profile Management: Name, Bio, Avatar
+  • Password Change: Secure password update
+  • Email Display: Read-only
+  • Role Display: Read-only
+
+═══════════════════════════════════════════════════════════════════════════════
+                          UPDATING PROFILE
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Go to Settings
+   Click "⚙️ Settings" in navbar or go to /admin/settings
+
+2. Update Profile
+   • Edit Full Name
+   • Edit Bio (max 500 chars)
+   • Add Avatar URL
+   • Click "Save Profile"
+
+3. Change Password
+   • Click "Change Password"
+   • Enter current password
+   • Enter new password (min 8 chars)
+   • Confirm new password
+   • Click "Change Password"
+
+═══════════════════════════════════════════════════════════════════════════════
+                          MODERN DESIGN
+═══════════════════════════════════════════════════════════════════════════════
+
+✨ Dark Theme
+  • Slate-950 background
+  • Gradient accents
+  • Color-coded metrics
+
+✨ Responsive Design
+  • Mobile-friendly
+  • Charts scale responsively
+  • Touch-friendly buttons
+
+✨ User Experience
+  • Loading states
+  • Toast notifications
+  • Confirmation dialogs
+  • Clear navigation
+
+═══════════════════════════════════════════════════════════════════════════════
+                          TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+Q: Charts not displaying?
+A: Install recharts: npm install recharts
+
+Q: Admin dashboard not accessible?
+A: Run: python backend/set_admin.py bryantech.dev@gmail.com
+
+Q: Password change fails?
+A: Make sure current password is correct and new password is 8+ chars
+
+Q: Profile update fails?
+A: Check avatar URL is valid and bio is under 500 chars
+
+═══════════════════════════════════════════════════════════════════════════════
+                              FILES CREATED
+═══════════════════════════════════════════════════════════════════════════════
+
+Backend:
+  ✅ backend/set_admin.py - Set admin by email
+  ✅ backend/app/api/admin_analytics.py - Advanced analytics
+  ✅ backend/app/api/auth.py - Password change endpoint
+  ✅ backend/app/main.py - Analytics router
+
+Frontend:
+  ✅ frontend/src/app/admin/dashboard/page.tsx - Dashboard with charts
+  ✅ frontend/src/app/admin/settings/page.t

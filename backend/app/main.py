@@ -9,7 +9,7 @@ import os
 # Load environment variables FIRST
 load_dotenv()
 
-from app.api import auth, posts, admin
+from app.api import auth, posts, admin, admin_analytics
 from app.core.logging import setup_logging
 from app.core.middleware import auth_middleware
 
@@ -70,6 +70,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth.router)
 app.include_router(posts.router)
 app.include_router(admin.router)
+app.include_router(admin_analytics.router)
 
 # Health check endpoint (no auth required)
 @app.get("/health")

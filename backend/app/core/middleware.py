@@ -20,6 +20,11 @@ async def auth_middleware(request: Request, call_next):
         "/redoc", 
         "/openapi.json"
     ]
+    
+    # Allow uploads directory without authentication
+    if request.url.path.startswith("/uploads/"):
+        return await call_next(request)
+    
     if request.url.path in public_paths:
         return await call_next(request)
     
