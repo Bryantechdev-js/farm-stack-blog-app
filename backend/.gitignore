@@ -1,0 +1,3 @@
+# ignore .env files and vercel
+.env*
+.vercel

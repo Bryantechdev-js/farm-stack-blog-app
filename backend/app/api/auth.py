@@ -26,22 +26,30 @@ async def signup(user: UserCreate):
         hashed = hash_password(user.password)
         print(f"[SIGNUP] Password hashed successfully")
         
+        # Check if this is the first user (make them admin)
+        user_count = await db.users.count_documents({})
+        is_first_user = user_count == 0
+        role = "admin" if is_first_user else "user"
+        
+        print(f"[SIGNUP] User count: {user_count}, Role: {role}")
+        
         # Insert user
         print(f"[SIGNUP] Inserting user into database...")
         result = await db.users.insert_one({
             "email": user.email,
             "password": hashed,
-            "role": "user",
+            "role": role,
             "full_name": None,
             "bio": None,
             "avatar_url": None,
             "created_at": datetime.utcnow()
         })
         
-        print(f"[SIGNUP] User created successfully: {result.inserted_id}")
+        print(f"[SIGNUP] User created successfully: {result.inserted_id} (role: {role})")
         return {
             "message": "User created successfully",
-            "user_id": str(result.inserted_id)
+            "user_id": str(result.inserted_id),
+            "is_admin": is_first_user
         }
     except HTTPException:
         raise
@@ -293,3 +301,53 @@ async def update_profile(update_data: UserUpdate, request: Request):
         import traceback
         traceback.print_exc()
         raise HTTPException(500, f"Error updating profile: {str(e)}")
+
+@router.post("/change-password")
+async def change_password(request_data: dict, request: Request):
+    try:
+        # Get current user
+        token = request.cookies.get("access_token")
+        if not token:
+            raise HTTPException(401, "Not authenticated")
+        
+        payload = jwt.decode(token, SECRET, algorithms=[ALGO])
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(401, "Invalid token")
+        
+        current_password = request_data.get("current_password")
+        new_password = request_data.get("new_password")
+        
+        if not current_password or not new_password:
+            raise HTTPException(400, "Missing required fields")
+        
+        if len(new_password) < 8:
+            raise HTTPException(400, "Password must be at least 8 characters")
+        
+        # Find user
+        user = await db.users.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise HTTPException(404, "User not found")
+        
+        # Verify current password
+        if not verify_password(current_password, user["password"]):
+            raise HTTPException(401, "Current password is incorrect")
+        
+        # Hash new password
+        hashed_password = hash_password(new_password)
+        
+        # Update password
+        await db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"password": hashed_password}}
+        )
+        
+        print(f"[CHANGE_PASSWORD] Password changed for user: {user_id}")
+        return {"message": "Password changed successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[CHANGE_PASSWORD] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, f"Error changing password: {str(e)}")

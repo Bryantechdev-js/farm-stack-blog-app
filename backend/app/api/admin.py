@@ -40,15 +40,22 @@ async def get_all_users(request: Request = None):
         raise HTTPException(500, f"Error fetching users: {str(e)}")
 
 @router.put("/users/{user_id}/role")
-async def update_user_role(user_id: str, role: str, request: Request = None):
+async def update_user_role(user_id: str, role: dict, request: Request = None):
     try:
-        await get_admin_user(request)
-        if role not in ["user", "admin"]:
+        admin_user = await get_admin_user(request)
+        
+        if role.get("role") not in ["user", "admin"]:
             raise HTTPException(400, "Invalid role")
+        
+        # Prevent removing the last admin
+        if role.get("role") == "user":
+            admin_count = await db.users.count_documents({"role": "admin"})
+            if admin_count <= 1:
+                raise HTTPException(400, "Cannot remove the last admin. Promote another user to admin first.")
         
         result = await db.users.update_one(
             {"_id": ObjectId(user_id)},
-            {"$set": {"role": role}}
+            {"$set": {"role": role.get("role")}}
         )
         
         if result.matched_count == 0:
