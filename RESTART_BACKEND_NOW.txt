@@ -1,0 +1,43 @@
+🔧 COOKIE FIX - RESTART BACKEND
+
+PROBLEM: Cookie not being sent with /auth/me request
+
+SOLUTION: Changed cookie settings from samesite="lax" to samesite="none"
+
+WHY: Frontend (localhost:3000) and Backend (127.0.0.1:8000) are on different ports
+     samesite="lax" doesn't allow cross-port cookies
+     samesite="none" allows cross-port cookies
+
+WHAT TO DO:
+
+1. STOP BACKEND
+   In terminal running backend
+   Press: Ctrl+C
+
+2. RESTART BACKEND
+   cd backend
+   uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+
+3. TEST LOGIN
+   - Open http://localhost:3000/auth/login
+   - Email: bryantech.dev1@gmail.com
+   - Password: 12345678
+   - Click Login
+
+4. VERIFY SUCCESS
+   ✅ Redirected to dashboard
+   ✅ No 401 errors in console
+   ✅ Cookie visible in F12 → Application → Cookies
+   ✅ Can see "My Posts" section
+
+THAT'S IT! 🎉
+
+The cookie will now be sent with every request.
+
+---
+
+If still having issues:
+1. Check backend console for errors
+2. Check browser console (F12) for errors
+3. Check Network tab for failed requests
+4. Clear browser cookies and try again

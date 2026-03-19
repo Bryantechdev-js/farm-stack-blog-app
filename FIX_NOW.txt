@@ -1,0 +1,41 @@
+🔧 QUICK FIX - CORS and Failed to Fetch Error
+
+PROBLEM:
+- Frontend shows "Failed to fetch" error
+- CORS error: No 'Access-Control-Allow-Origin' header
+- No access_token cookie after login
+
+SOLUTION (3 STEPS):
+
+1. STOP FRONTEND DEV SERVER
+   - Press Ctrl+C in the terminal running "npm run dev"
+
+2. VERIFY BACKEND IS RUNNING
+   - Open new terminal
+   - Run: curl http://127.0.0.1:8000/health
+   - Should see: {"status":"ok"}
+
+3. RESTART FRONTEND DEV SERVER
+   - cd frontend
+   - npm run dev
+   - Open http://localhost:3000
+
+WHY THIS WORKS:
+- Frontend needs to reload .env.local file to get correct API URL
+- Backend is already configured correctly with CORS headers
+- Restarting frontend picks up the environment variables
+
+VERIFY IT WORKS:
+✓ Frontend loads without CORS errors
+✓ Can sign up and login
+✓ Check F12 → Application → Cookies → see "access_token"
+✓ Dashboard loads posts without errors
+
+If still having issues:
+- Check browser console (F12) for error messages
+- Verify backend is running: curl http://127.0.0.1:8000/health
+- Check frontend env: console.log(process.env.NEXT_PUBLIC_API_URL)
+- Clear browser cache: Ctrl+Shift+Delete
+- Restart both frontend and backend
+
+See CORS_SOLUTION.md for detailed troubleshooting

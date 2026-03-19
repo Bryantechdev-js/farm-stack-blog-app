@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+motor
+python-jose
+passlib[bcrypt]
+python-multipart
+bleach
+redis
+structlog
+slowapi
+pydantic[email]
+pydantic-settings
+python-dotenv
+argon2-cffi
+
+
