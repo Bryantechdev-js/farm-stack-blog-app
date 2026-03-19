@@ -106,7 +106,7 @@ async def logout(response: Response):
             path="/",
             samesite="lax"
         )
-        return {"message": "Logged out successfully"}
+        return {"message": "Logged out successfully","status":200,"ok":True}
     except Exception as e:
         print(f"[LOGOUT] Error: {str(e)}")
         import traceback
