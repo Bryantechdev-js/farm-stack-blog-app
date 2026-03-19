@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from dotenv import load_dotenv
 import os
 
@@ -31,6 +32,24 @@ app.add_middleware(
 
 # Add auth middleware
 app.middleware("http")(auth_middleware)
+
+# Validation error handler
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    error_messages = []
+    for error in errors:
+        field = error.get("loc", ["unknown"])[-1]
+        msg = error.get("msg", "Invalid value")
+        error_messages.append(f"{field}: {msg}")
+    
+    detail = " | ".join(error_messages) if error_messages else "Invalid request"
+    print(f"[VALIDATION_ERROR] {detail}")
+    
+    return JSONResponse(
+        status_code=422,
+        content={"detail": detail}
+    )
 
 # Global exception handler
 @app.exception_handler(Exception)

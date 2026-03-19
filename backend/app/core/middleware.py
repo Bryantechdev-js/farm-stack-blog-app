@@ -9,7 +9,17 @@ async def auth_middleware(request: Request, call_next):
         return await call_next(request)
     
     # Public endpoints that don't require authentication
-    public_paths = ["/auth/login", "/auth/signup", "/health", "/docs", "/redoc", "/openapi.json"]
+    public_paths = [
+        "/auth/login", 
+        "/auth/signup", 
+        "/auth/forgot-password",
+        "/auth/verify-otp",
+        "/auth/reset-password",
+        "/health", 
+        "/docs", 
+        "/redoc", 
+        "/openapi.json"
+    ]
     if request.url.path in public_paths:
         return await call_next(request)
     
