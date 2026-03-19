@@ -10,6 +10,7 @@ load_dotenv()
 
 from app.api import auth, posts, admin
 from app.core.logging import setup_logging
+from app.core.middleware import auth_middleware
 
 setup_logging()
 app = FastAPI(title="Secure Blog")
@@ -27,6 +28,9 @@ app.add_middleware(
     expose_headers=["*", "Set-Cookie"],
     max_age=3600,
 )
+
+# Add auth middleware
+app.middleware("http")(auth_middleware)
 
 # Global exception handler
 @app.exception_handler(Exception)

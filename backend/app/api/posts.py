@@ -297,11 +297,16 @@ async def bookmark_post(post_id: str, request: Request = None):
 
 # Helper functions
 def format_post(post):
+    image = post.get("image")
+    # Ensure image path is correct for frontend rewrite
+    if image and not image.startswith("/"):
+        image = f"/{image}"
+    
     return {
         "id": str(post["_id"]),
         "title": post.get("title"),
         "content": post.get("content"),
-        "image": post.get("image"),
+        "image": image,
         "author_id": str(post.get("author_id")),
         "author_email": post.get("author_email"),
         "created_at": post.get("created_at"),
