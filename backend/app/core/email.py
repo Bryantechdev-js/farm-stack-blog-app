@@ -4,8 +4,11 @@ import string
 from datetime import datetime, timedelta
 from app.db.mongo import db
 import asyncio
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+logger = logging.getLogger(__name__)
 
 # Email configuration
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
@@ -26,6 +29,7 @@ async def send_otp_email(email: str) -> str:
     """
     try:
         otp = await generate_otp()
+        logger.info(f"Generated OTP for email: {email}")
         
         # Store OTP in database with 10-minute expiration
         await db.otp_tokens.update_one(
@@ -41,7 +45,7 @@ async def send_otp_email(email: str) -> str:
             upsert=True
         )
         
-        print(f"[EMAIL] OTP generated for {email}: {otp}")
+        logger.debug(f"OTP stored in database for {email}")
         
         # Try to send email if configured
         if SMTP_USER and SMTP_PASSWORD and SENDER_EMAIL:
@@ -63,16 +67,17 @@ async def send_otp_email(email: str) -> str:
                     </html>
                     """
                 )
-                print(f"[EMAIL] OTP email sent to {email}")
+                logger.info(f"OTP email sent successfully to {email}")
             except Exception as e:
-                print(f"[EMAIL] Failed to send email: {str(e)}")
-                print(f"[EMAIL] OTP for testing: {otp}")
+                logger.warning(f"Failed to send OTP email to {email}: {str(e)}")
+                logger.debug(f"OTP for testing (email failed): {otp}")
         else:
-            print(f"[EMAIL] Email not configured. OTP for testing: {otp}")
+            logger.warning("Email not configured - OTP will not be sent via email")
+            logger.debug(f"OTP for testing: {otp}")
         
         return otp
     except Exception as e:
-        print(f"[EMAIL] Error generating OTP: {str(e)}")
+        logger.error(f"Error generating OTP for {email}: {str(e)}", exc_info=True)
         raise
 
 async def send_email(to_email: str, subject: str, body: str) -> bool:
@@ -100,35 +105,42 @@ async def send_email(to_email: str, subject: str, body: str) -> bool:
                 server.sendmail(SENDER_EMAIL, to_email, message.as_string())
         
         await loop.run_in_executor(None, send_smtp)
+        logger.debug(f"Email sent successfully to {to_email}")
         return True
     except Exception as e:
-        print(f"[EMAIL] SMTP Error: {str(e)}")
+        logger.error(f"SMTP error sending email to {to_email}: {str(e)}", exc_info=True)
         raise
 
 async def verify_otp(email: str, otp: str) -> bool:
     """Verify OTP and check if it's not expired"""
     try:
+        logger.debug(f"Verifying OTP for email: {email}")
         otp_record = await db.otp_tokens.find_one({"email": email})
         
         if not otp_record:
+            logger.warning(f"OTP record not found for email: {email}")
             return False
         
         # Check if OTP matches
         if otp_record.get("otp") != otp:
+            logger.warning(f"OTP mismatch for email: {email}")
             return False
         
         # Check if OTP is expired
         if datetime.utcnow() > otp_record.get("expires_at"):
+            logger.warning(f"OTP expired for email: {email}")
             return False
         
+        logger.info(f"OTP verified successfully for email: {email}")
         return True
     except Exception as e:
-        print(f"[EMAIL] Error verifying OTP: {str(e)}")
+        logger.error(f"Error verifying OTP for {email}: {str(e)}", exc_info=True)
         return False
 
 async def delete_otp(email: str):
     """Delete OTP after successful verification"""
     try:
         await db.otp_tokens.delete_one({"email": email})
+        logger.debug(f"OTP deleted for email: {email}")
     except Exception as e:
-        print(f"[EMAIL] Error deleting OTP: {str(e)}")
+        logger.error(f"Error deleting OTP for {email}: {str(e)}", exc_info=True)

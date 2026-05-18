@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from dotenv import load_dotenv
 import os
+import logging
 
 # Load environment variables FIRST
 load_dotenv()
@@ -13,8 +14,10 @@ from app.api import auth, posts, admin, admin_analytics
 from app.core.logging import setup_logging
 from app.core.middleware import auth_middleware
 
-setup_logging()
+logger = setup_logging()
 app = FastAPI(title="Secure Blog")
+
+logger.info("FastAPI application initialized")
 
 # Add CORS middleware FIRST and ONLY (before everything else)
 app.add_middleware(
@@ -44,7 +47,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         error_messages.append(f"{field}: {msg}")
     
     detail = " | ".join(error_messages) if error_messages else "Invalid request"
-    print(f"[VALIDATION_ERROR] {detail}")
+    logger.warning(f"Validation error: {detail}")
     
     return JSONResponse(
         status_code=422,
@@ -54,9 +57,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Global exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    print(f"[ERROR] Unhandled exception: {str(exc)}")
-    import traceback
-    traceback.print_exc()
+    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error", "error": str(exc)}

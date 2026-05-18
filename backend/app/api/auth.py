@@ -7,34 +7,36 @@ from datetime import datetime
 from bson import ObjectId
 from jose import jwt, JWTError
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth")
 
 @router.post("/signup")
 async def signup(user: UserCreate):
     try:
-        print(f"[SIGNUP] Attempt for email: {user.email}")
+        logger.info(f"Signup attempt for email: {user.email}")
         
         # Check if user exists
         existing = await db.users.find_one({"email": user.email})
         if existing:
-            print(f"[SIGNUP] Email already exists: {user.email}")
+            logger.warning(f"Signup failed - email already exists: {user.email}")
             raise HTTPException(400, "Email already exists")
         
         # Hash password
-        print(f"[SIGNUP] Hashing password...")
+        logger.debug(f"Hashing password for user: {user.email}")
         hashed = hash_password(user.password)
-        print(f"[SIGNUP] Password hashed successfully")
+        logger.debug(f"Password hashed successfully for user: {user.email}")
         
         # Check if this is the first user (make them admin)
         user_count = await db.users.count_documents({})
         is_first_user = user_count == 0
         role = "admin" if is_first_user else "user"
         
-        print(f"[SIGNUP] User count: {user_count}, Role: {role}")
+        logger.info(f"User count: {user_count}, assigning role: {role} to {user.email}")
         
         # Insert user
-        print(f"[SIGNUP] Inserting user into database...")
+        logger.debug(f"Inserting user into database: {user.email}")
         result = await db.users.insert_one({
             "email": user.email,
             "password": hashed,
@@ -45,7 +47,7 @@ async def signup(user: UserCreate):
             "created_at": datetime.utcnow()
         })
         
-        print(f"[SIGNUP] User created successfully: {result.inserted_id} (role: {role})")
+        logger.info(f"User created successfully - ID: {result.inserted_id}, Email: {user.email}, Role: {role}")
         return {
             "message": "User created successfully",
             "user_id": str(result.inserted_id),
@@ -54,35 +56,33 @@ async def signup(user: UserCreate):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[SIGNUP] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Signup error for {user.email}: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Signup failed: {str(e)}")
 
 @router.post("/login")
 async def login(user: UserCreate, response: Response):
     try:
-        print(f"[LOGIN] Attempt for email: {user.email}")
+        logger.info(f"Login attempt for email: {user.email}")
         
         # Find user
         db_user = await db.users.find_one({"email": user.email})
         if not db_user:
-            print(f"[LOGIN] User not found: {user.email}")
+            logger.warning(f"Login failed - user not found: {user.email}")
             raise HTTPException(401, "Invalid credentials")
         
         # Verify password
-        print(f"[LOGIN] Verifying password...")
+        logger.debug(f"Verifying password for user: {user.email}")
         if not verify_password(user.password, db_user["password"]):
-            print(f"[LOGIN] Password verification failed for: {user.email}")
+            logger.warning(f"Login failed - invalid password for: {user.email}")
             raise HTTPException(401, "Invalid credentials")
         
         # Create token
-        print(f"[LOGIN] Creating token...")
+        logger.debug(f"Creating JWT token for user: {user.email}")
         token = create_token(str(db_user["_id"]), db_user.get("role", "user"))
-        print(f"[LOGIN] Token created for user: {user.email}")
+        logger.debug(f"JWT token created for user: {user.email}")
         
         # Set cookie
-        print(f"[LOGIN] Setting cookie...")
+        logger.debug(f"Setting authentication cookie for user: {user.email}")
         response.set_cookie(
             key="access_token",
             value=token,
@@ -92,7 +92,7 @@ async def login(user: UserCreate, response: Response):
             max_age=3600,
             path="/",
         )
-        print(f"[LOGIN] Cookie set for user: {user.email}")
+        logger.info(f"Login successful for user: {user.email}, Role: {db_user.get('role', 'user')}")
         
         return {
             "message": "Login successful",
@@ -105,24 +105,22 @@ async def login(user: UserCreate, response: Response):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[LOGIN] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Login error for {user.email}: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Login failed: {str(e)}")
 
 @router.post("/logout")
 async def logout(response: Response):
     try:
+        logger.info("Logout request received")
         response.delete_cookie(
             "access_token",
             path="/",
             samesite="lax"
         )
+        logger.info("User logged out successfully")
         return {"message": "Logged out successfully","status":200,"ok":True}
     except Exception as e:
-        print(f"[LOGOUT] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Logout error: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Logout failed: {str(e)}")
 
 @router.get("/me")
@@ -130,17 +128,21 @@ async def get_current_user(request: Request):
     try:
         token = request.cookies.get("access_token")
         if not token:
+            logger.warning("Get current user failed - no token provided")
             raise HTTPException(401, "Not authenticated")
         
         payload = jwt.decode(token, SECRET, algorithms=[ALGO])
         user_id = payload.get("sub")
         if not user_id:
+            logger.warning("Get current user failed - invalid token payload")
             raise HTTPException(401, "Invalid token")
         
         user = await db.users.find_one({"_id": ObjectId(user_id)})
         if not user:
+            logger.warning(f"Get current user failed - user not found: {user_id}")
             raise HTTPException(401, "User not found")
         
+        logger.debug(f"Retrieved current user: {user['email']}")
         return {
             "id": str(user["_id"]),
             "email": user["email"],
@@ -153,77 +155,72 @@ async def get_current_user(request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[GET_ME] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Get current user error: {str(e)}", exc_info=True)
         raise HTTPException(401, "Invalid token")
 
 
 @router.post("/forgot-password")
 async def forgot_password(request_data: ForgotPasswordRequest):
     try:
-        print(f"[FORGOT_PASSWORD] Request for email: {request_data.email}")
+        logger.info(f"Forgot password request for email: {request_data.email}")
         
         # Check if user exists
         user = await db.users.find_one({"email": request_data.email})
         if not user:
             # Don't reveal if email exists (security best practice)
-            print(f"[FORGOT_PASSWORD] User not found: {request_data.email}")
+            logger.warning(f"Forgot password request for non-existent email: {request_data.email}")
             return {"message": "If email exists, OTP has been sent"}
         
         # Generate and send OTP
         otp = await send_otp_email(request_data.email)
-        print(f"[FORGOT_PASSWORD] OTP sent to {request_data.email}")
+        logger.info(f"OTP sent successfully to {request_data.email}")
         
         return {
             "message": "OTP sent to your email",
             "otp": otp  # For testing only - remove in production
         }
     except Exception as e:
-        print(f"[FORGOT_PASSWORD] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Forgot password error for {request_data.email}: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Error processing request: {str(e)}")
 
 @router.post("/verify-otp")
 async def verify_otp_endpoint(request_data: VerifyOTPRequest):
     try:
-        print(f"[VERIFY_OTP] Verifying OTP for email: {request_data.email}")
+        logger.info(f"OTP verification request for email: {request_data.email}")
         
         # Verify OTP
         is_valid = await verify_otp(request_data.email, request_data.otp)
         if not is_valid:
-            print(f"[VERIFY_OTP] Invalid or expired OTP for: {request_data.email}")
+            logger.warning(f"Invalid or expired OTP for: {request_data.email}")
             raise HTTPException(400, "Invalid or expired OTP")
         
-        print(f"[VERIFY_OTP] OTP verified for: {request_data.email}")
+        logger.info(f"OTP verified successfully for: {request_data.email}")
         return {"message": "OTP verified successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[VERIFY_OTP] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"OTP verification error for {request_data.email}: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Error verifying OTP: {str(e)}")
 
 @router.post("/reset-password")
 async def reset_password(request_data: ResetPasswordRequest):
     try:
-        print(f"[RESET_PASSWORD] Request for email: {request_data.email}")
+        logger.info(f"Password reset request for email: {request_data.email}")
         
         # Verify OTP first
         is_valid = await verify_otp(request_data.email, request_data.otp)
         if not is_valid:
-            print(f"[RESET_PASSWORD] Invalid or expired OTP for: {request_data.email}")
+            logger.warning(f"Invalid or expired OTP for password reset: {request_data.email}")
             raise HTTPException(400, "Invalid or expired OTP")
         
         # Find user
         user = await db.users.find_one({"email": request_data.email})
         if not user:
-            print(f"[RESET_PASSWORD] User not found: {request_data.email}")
+            logger.warning(f"User not found for password reset: {request_data.email}")
             raise HTTPException(404, "User not found")
         
         # Hash new password
+        logger.debug(f"Hashing new password for user: {request_data.email}")
         hashed_password = hash_password(request_data.new_password)
         
         # Update password
@@ -235,14 +232,12 @@ async def reset_password(request_data: ResetPasswordRequest):
         # Delete OTP after successful reset
         await delete_otp(request_data.email)
         
-        print(f"[RESET_PASSWORD] Password reset successful for: {request_data.email}")
+        logger.info(f"Password reset successful for: {request_data.email}")
         return {"message": "Password reset successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[RESET_PASSWORD] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Password reset error for {request_data.email}: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Error resetting password: {str(e)}")
 
 @router.put("/profile")
@@ -258,7 +253,7 @@ async def update_profile(update_data: UserUpdate, request: Request):
         if not user_id:
             raise HTTPException(401, "Invalid token")
         
-        print(f"[UPDATE_PROFILE] Updating profile for user: {user_id}")
+        logger.info(f"Updating profile for user: {user_id}")
         
         # Build update dict with only provided fields
         update_dict = {}
@@ -284,7 +279,7 @@ async def update_profile(update_data: UserUpdate, request: Request):
         # Get updated user
         user = await db.users.find_one({"_id": ObjectId(user_id)})
         
-        print(f"[UPDATE_PROFILE] Profile updated for user: {user_id}")
+        logger.info(f"Profile updated successfully for user: {user_id}")
         return {
             "id": str(user["_id"]),
             "email": user["email"],
@@ -297,9 +292,7 @@ async def update_profile(update_data: UserUpdate, request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[UPDATE_PROFILE] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Profile update error: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Error updating profile: {str(e)}")
 
 @router.post("/change-password")
@@ -331,9 +324,11 @@ async def change_password(request_data: dict, request: Request):
         
         # Verify current password
         if not verify_password(current_password, user["password"]):
+            logger.warning(f"Password change failed - incorrect current password for user: {user_id}")
             raise HTTPException(401, "Current password is incorrect")
         
         # Hash new password
+        logger.debug(f"Hashing new password for user: {user_id}")
         hashed_password = hash_password(new_password)
         
         # Update password
@@ -342,12 +337,10 @@ async def change_password(request_data: dict, request: Request):
             {"$set": {"password": hashed_password}}
         )
         
-        print(f"[CHANGE_PASSWORD] Password changed for user: {user_id}")
+        logger.info(f"Password changed successfully for user: {user_id}")
         return {"message": "Password changed successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[CHANGE_PASSWORD] Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Password change error: {str(e)}", exc_info=True)
         raise HTTPException(500, f"Error changing password: {str(e)}")

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional,Union
 from datetime import datetime
 
 class UserCreate(BaseModel):

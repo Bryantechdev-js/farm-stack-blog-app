@@ -1,0 +1,144 @@
+2026-04-06 18:14:56 - app.api.auth - ERROR - Signup error for kelly@gmail.com: ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net:27017: timed out (configured timeouts: connectTimeoutMS: 20000.0ms)
+Traceback (most recent call last):
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 1262, in connect
+    sock = _configured_socket(self.address, self.opts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 862, in _configured_socket
+    sock = _create_connection(address, options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 846, in _create_connection
+    raise err
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 839, in _create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Bryan-tech\farm_stack_blog\backend\app\api\auth.py", line 21, in signup
+    existing = await db.users.find_one({"email": user.email})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\collection.py", line 1730, in find_one
+    for result in cursor.limit(-1):
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1281, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1257, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1205, in _refresh
+    self._send_message(q)
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1100, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\_csot.py", line 119, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1754, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1863, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\_csot.py", line 119, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1830, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2559, in run
+    self._check_last_error()
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2638, in _check_last_error
+    raise self._last_error
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2554, in run
+    return self._read() if self._is_read else self._write()
+           ^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2691, in _read
+    with self._client._conn_from_server(self._read_pref, self._server, self._session) as (
+  File "C:\Users\Bryan-tech\anaconda3\Lib\contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1683, in _conn_from_server
+    with self._checkout(server, session) as conn:
+  File "C:\Users\Bryan-tech\anaconda3\Lib\contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1593, in _checkout
+    with server.checkout(handler=err_handler) as conn:
+  File "C:\Users\Bryan-tech\anaconda3\Lib\contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 1336, in checkout
+    conn = self._get_conn(checkout_started_time, handler=handler)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 1495, in _get_conn
+    conn = self.connect(handler=handler)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 1282, in connect
+    _raise_connection_failure(self.address, error, timeout_details=details)
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\pool.py", line 200, in _raise_connection_failure
+    raise NetworkTimeout(msg) from error
+pymongo.errors.NetworkTimeout: ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net:27017: timed out (configured timeouts: connectTimeoutMS: 20000.0ms)
+2026-04-06 18:15:10 - app.api.auth - ERROR - Signup error for kelly@gmail.com: ac-iq6mwtv-shard-00-01.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-iq6mwtv-shard-00-00.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 69d3d979741c85e67a925559, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-iq6mwtv-shard-00-00.vpzmmtb.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-iq6mwtv-shard-00-00.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-iq6mwtv-shard-00-01.vpzmmtb.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-iq6mwtv-shard-00-01.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>
+Traceback (most recent call last):
+  File "C:\Users\Bryan-tech\farm_stack_blog\backend\app\api\auth.py", line 21, in signup
+    existing = await db.users.find_one({"email": user.email})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\collection.py", line 1730, in find_one
+    for result in cursor.limit(-1):
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1281, in __next__
+    return self.next()
+           ^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1257, in next
+    if len(self._data) or self._refresh():
+                          ^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1205, in _refresh
+    self._send_message(q)
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\cursor.py", line 1100, in _send_message
+    response = client._run_operation(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\_csot.py", line 119, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1754, in _run_operation
+    return self._retryable_read(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1863, in _retryable_read
+    return self._retry_internal(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\_csot.py", line 119, in csot_wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1830, in _retry_internal
+    ).run()
+      ^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2554, in run
+    return self._read() if self._is_read else self._write()
+           ^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2689, in _read
+    self._server = self._get_server()
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 2645, in _get_server
+    return self._client._select_server(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\mongo_client.py", line 1649, in _select_server
+    server = topology.select_server(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\topology.py", line 398, in select_server
+    server = self._select_server(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\topology.py", line 376, in _select_server
+    servers = self.select_servers(
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\topology.py", line 283, in select_servers
+    server_descriptions = self._select_servers_loop(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Bryan-tech\anaconda3\Lib\site-packages\pymongo\synchronous\topology.py", line 333, in _select_servers_loop
+    raise ServerSelectionTimeoutError(
+pymongo.errors.ServerSelectionTimeoutError: ac-iq6mwtv-shard-00-01.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms),ac-iq6mwtv-shard-00-00.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 30s, Topology Description: <TopologyDescription id: 69d3d979741c85e67a925559, topology_type: ReplicaSetNoPrimary, servers: [<ServerDescription ('ac-iq6mwtv-shard-00-00.vpzmmtb.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-iq6mwtv-shard-00-00.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-iq6mwtv-shard-00-01.vpzmmtb.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-iq6mwtv-shard-00-01.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>, <ServerDescription ('ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('ac-iq6mwtv-shard-00-02.vpzmmtb.mongodb.net:27017: [Errno 11001] getaddrinfo failed (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms)')>]>

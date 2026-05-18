@@ -42,6 +42,8 @@ async def get_advanced_analytics(request: Request = None):
                 "comments": post.get("comments_count", 0),
                 "bookmarks": len(post.get("bookmarks", []))
             })
+
+            
         
         # Active users trend (last 30 days)
         active_users_trend = []
